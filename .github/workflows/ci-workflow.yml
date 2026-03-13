@@ -17,6 +17,9 @@ jobs:
     name: CI job
     runs-on: ubuntu-latest
 
+    env:
+      PYTHONPATH: .
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,47 +29,34 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Bazel
+        uses: bazel-contrib/setup-bazel@v0.9.0
+
       - name: Upgrade pip
         run: |
           python -m pip install --upgrade pip
           python -m pip --version
 
-      - name: Install dependencies
+      - name: Install non-Bazel tools
         run: |
-          # Your existing runtime deps
           pip install -r requirements-pyspark.txt
-
-          # Test + lint tooling (explicit install avoids pyproject metadata issues)
-          pip install "pytest>=8.0.0" "pytest-html>=4.1.1"
           pip install "pylint>=3.2.0" "nbqa>=1.8.0"
 
-      # -------------------------
-      # LINT PYTHON FILES (.py)
-      # -------------------------
       - name: Lint Python files with pylint
         run: |
-          # Adjust these paths to your repo structure
-          python -m pylint src 
+          python -m pylint src
 
-      # -------------------------
-      # LINT NOTEBOOKS (.ipynb)
-      # -------------------------
       - name: Lint notebooks with nbqa + pylint
         run: |
-          # Change 'notebooks' if your notebooks live elsewhere
           nbqa pylint resources --nbqa-shell
-      # -------------------------
-      # RUN UNIT TESTS
-      # -------------------------
-      - name: Run pytest
-        run: |
-          # If your tests are in ./tests this will auto-discover
-          pytest -q --disable-warnings --maxfail=1 \
-            --html=pytest_report.html --self-contained-html
 
-      - name: Upload pytest report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-report
-          path: pytest_report.html
+      - name: Run Bazel tests
+        run: |
+          bazel test //:test_utils //:test_service
+
+      - name: Set up Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate bundle
+        run: |
+          databricks bundle validate
