@@ -21,6 +21,7 @@ py_test(
     deps = [
         ":src_lib",
         requirement("pytest"),
+        requirement("pluggy"),
     ],
     imports = ["."],
 )
@@ -33,6 +34,7 @@ py_test(
     deps = [
         ":src_lib",
         requirement("pytest"),
+        requirement("pluggy"),
     ],
     imports = ["."],
 )
