@@ -60,7 +60,7 @@ jobs:
           pytest tests -q --disable-warnings --maxfail=1 \
             --html=pytest_report.html --self-contained-html
 
-      - name: Upload pytest report
+      - name: Upload Bazel test logs and report files
         if: always()
         uses: actions/upload-artifact@v4
         with:
