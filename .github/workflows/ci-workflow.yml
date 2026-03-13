@@ -42,6 +42,14 @@ jobs:
           pip install -r requirements-pyspark.txt
           pip install "pylint>=3.2.0" "nbqa>=1.8.0"
 
+      - name: Verify Bazel workspace
+        working-directory: ${{ github.workspace }}
+        run: |
+          pwd
+          ls -la
+          test -f MODULE.bazel
+          test -f BUILD.bazel
+
       - name: Lint Python files with pylint
         run: |
           python -m pylint src
@@ -51,17 +59,15 @@ jobs:
           nbqa pylint resources --nbqa-shell
 
       - name: Run Bazel tests
+        working-directory: ${{ github.workspace }}
         run: |
-          bazel test //... \
-            --test_output=errors \
-            --build_event_json_file=bazel_bep.json
+          bazel test //... --test_output=errors
 
-      - name: Upload Bazel test logs and report files
+      - name: Upload Bazel test logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bazel-test-report
+          name: bazel-testlogs
           path: |
             bazel-testlogs
             bazel-out/**/testlogs/**
-            bazel_bep.json
