@@ -1,0 +1,64 @@
+[project]
+name = "dabproject"
+version = "0.0.1"
+authors = [{ name = "mayank.madhukar@pwc.com" }]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    # Any dependencies for jobs and pipelines in this project can be added here
+    # See also https://docs.databricks.com/dev-tools/bundles/library-dependencies
+    #
+    # LIMITATION: for pipelines, dependencies are cached during development;
+    # add dependencies to the 'environment' section of your pipeline.yml file instead
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "pylint>=3.2.0",
+    "nbqa>=1.8.0",
+    "databricks-dlt",
+    "databricks-connect>=15.4,<15.5",
+    "ipykernel",
+]
+
+[project.scripts]
+main = "dabproject.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# -------------------------
+# Ruff configuration
+# -------------------------
+[tool.ruff]
+line-length = 120
+
+# -------------------------
+# Pylint configuration (Databricks-friendly)
+# -------------------------
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.messages_control]
+disable = [
+    # Docstring noise (optional)
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+
+    # Ruff handles formatting/import sorting; keep pylint focused on correctness
+    "line-too-long",
+    "wrong-import-order",
+
+    # Databricks/CI environment gaps (e.g., dlt not available in CI)
+    "import-error",
+]
+
+[tool.pylint.variables]
+# Databricks runtime-injected globals
+additional-builtins = ["spark", "dbutils", "display"]
+
+[tool.pylint.reports]
+score = false
